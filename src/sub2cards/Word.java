@@ -137,4 +137,64 @@ public class Word {
     public static String getRemoteContent(String uri) {
         return getRemoteContent(uri, Constants.DEFAULT_ENCODING);
     }
+
+    /**
+     *
+     * @param text text to translate
+     * @param lang src-dest languages
+     * @return the translated word
+     * @throws Exception in case there was a problem with the service
+     */
+    public static String getTranslation(String text, String lang) throws Exception   {
+
+        final String yandexAPIKey = Config.getInstance().getYandexAPIKey();
+
+        if(yandexAPIKey.isEmpty())
+            throw new RuntimeException("[!] Problem fetching Yandex API key. Do you have one ?");
+        final String request = String.format(Constants.REQ_FMT, yandexAPIKey, text, lang);
+        final String content = getRemoteContent(request);
+        List<String> translation = extractResultsFromData(content, Constants.YANDEX_REGEX);
+        if(translation.isEmpty())
+            throw new Exception(text);
+
+        return translation.get(0);
+    }
+
+    /**
+     *
+     * @param text text to translate
+     * @return the translated word
+     * @throws Exception in case there was a problem with the service
+     */
+    public static String getTranslation(String text) throws Exception   {
+
+        return getTranslation(text, Constants.DEFAULT_LANG);
+    }
+
+    /**
+     *
+     * @param words words to be translated
+     * @param lang src-dest languages
+     * @return a new collection containing the original words and their translation
+     */
+    public static List<Word> translateCollection(List<String> words, String lang)  {
+        List<Word> translatedWords = new ArrayList<>(words.size());
+        List<String> errors = new ArrayList<>();
+        for(String w : words)   {
+            try {
+                String translation = getTranslation(w, lang);
+                translatedWords.add(new Word(w, translation, w));
+            } catch (Exception e) {
+                errors.add(w);
+                e.printStackTrace();
+            }
+        }
+
+        return translatedWords;
+    }
+
+    @Override
+    public String toString()    {
+        return this.originalForm + " -> " + this.simplifiedForm + " -> " + this.translation;
+    }
 }

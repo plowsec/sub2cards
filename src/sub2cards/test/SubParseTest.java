@@ -102,4 +102,13 @@ public class SubParseTest {
             e.printStackTrace();
         }
     }
+
+    @Test
+    public void translateTest() {
+        try {
+            assertTrue("сталь -> steel", Word.getTranslation("сталь").equals("steel"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

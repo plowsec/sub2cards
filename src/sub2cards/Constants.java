@@ -27,4 +27,20 @@ public class Constants {
 
     //default encoding otherwise
     public static final String DEFAULT_ENCODING = "UTF8";
+
+    //path to config file for api keys
+    public static final String CONFIG_FILE = "config.properties";
+
+    //api key of yandex translate. get here https://tech.yandex.com/key/form.xml?service=trnsl
+    //Update : you must place this key inside the config.properties file, field is "yandex".
+    public static String YANDEX_API_KEY = "";
+
+    //default langs used to translate the text (source-dest)
+    public static final String DEFAULT_LANG = "ru-en";
+
+    //regex used to extract translation from yandex json response
+    public static final String YANDEX_REGEX = "\\[\\\"([^\"]*)\\\"\\]";
+
+    //Yandex Translate GET request
+    public static final String REQ_FMT = "https://translate.yandex.net/api/v1.5/tr.json/translate?key=%s&text=%s&lang=%s";
 }
