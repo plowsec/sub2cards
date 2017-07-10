@@ -43,4 +43,10 @@ public class Constants {
 
     //Yandex Translate GET request
     public static final String REQ_FMT = "https://translate.yandex.net/api/v1.5/tr.json/translate?key=%s&text=%s&lang=%s";
+
+    //number of processors
+    public static final int NB_PROCS = Runtime.getRuntime().availableProcessors();
+
+    //multiple used on the number of processsors
+    public static final int FACTOR = 4;
 }

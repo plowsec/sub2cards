@@ -36,8 +36,6 @@ public class Config {
             String yandex = prop.getProperty("yandex");
             if (!yandex.isEmpty())
                 yandexAPIKey = yandex;
-            System.out.println(yandex);
-
         } catch (IOException ex) {
             ex.printStackTrace();
         } finally {

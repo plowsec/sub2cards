@@ -74,11 +74,11 @@ public class SubParseTest {
     @Test
     public void simplifyTest2() {
         try {
-            assertTrue("infinitive", Word.simplify("жил", Constants.WIN_ENC).equals("жить"));
+            assertTrue("infinitive", Word.simplify("жил", Constants.WIN_ENC).getSimplifiedForm().equals("жить"));
 
             assertTrue("стали should give сталь or стать",
-                    Word.simplify("стали", Constants.WIN_ENC).equals("сталь") ||
-                            Word.simplify("стали", Constants.WIN_ENC).equals("стать")
+                    Word.simplify("стали", Constants.WIN_ENC).getSimplifiedForm().equals("сталь") ||
+                            Word.simplify("стали", Constants.WIN_ENC).getSimplifiedForm().equals("стать")
             );
         } catch (Exception e) {
             e.printStackTrace();

@@ -6,6 +6,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,14 +16,28 @@ import java.util.regex.Pattern;
  */
 public class Word {
 
-    private String originalForm; //the form of the word as we collected it
-    private String translation; //translation to the default target language
-    private String simplifiedForm; //base form in the native language
+    private final String originalForm; //the form of the word as we collected it
+    private final String translation; //translation to the default target language
+    private final String simplifiedForm; //base form in the native language
 
-    public Word(String originalForm, String translation, String simplifiedForm) {
+    public Word(String originalForm, String simplifiedForm) {
+        this.originalForm = originalForm;
+        this.simplifiedForm = simplifiedForm;
+        this.translation = "";
+    }
+
+    public Word(String originalForm,  String simplifiedForm, String translation) {
         this.originalForm = originalForm;
         this.translation = translation;
         this.simplifiedForm = simplifiedForm;
+    }
+
+    public String getOriginalForm() {
+        return originalForm;
+    }
+
+    public String getSimplifiedForm()   {
+        return simplifiedForm;
     }
 
     /**
@@ -34,21 +49,21 @@ public class Word {
      * @return the simplified form of the word or the word itself
      * @throws Exception in case the service used didn't know the word
      */
-    public static String simplify(String word, String encoding) throws Exception {
+    public static Word simplify(String word, String encoding) throws Exception {
 
         String url;
         try {
             url = String.format(Constants.STARLING_URL_FMT, URLEncoder.encode(word, encoding));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
-            return word;
+            return new Word(word, word);
         }
         String content = Word.getRemoteContent(url, encoding);
         List<String> links = extractResultsFromData(content);
         if (links.isEmpty()) {
             throw new Exception(word);
         }
-        return links.get(0).replaceAll("'", "");
+        return new Word(word, links.get(0).replaceAll("'", ""));
     }
 
     /**
@@ -61,7 +76,7 @@ public class Word {
      * @return the simplified form of the word or the word itself
      * @throws Exception in case the service used didn't know the word
      */
-    public static String simplify(String word) throws Exception {
+    public static Word simplify(String word) throws Exception {
         return simplify(word, Constants.DEFAULT_ENCODING);
     }
 
@@ -157,7 +172,7 @@ public class Word {
         if(translation.isEmpty())
             throw new Exception(text);
 
-        return translation.get(0);
+        return translation.get(0).toLowerCase();
     }
 
     /**
@@ -177,7 +192,7 @@ public class Word {
      * @param lang src-dest languages
      * @return a new collection containing the original words and their translation
      */
-    public static List<Word> translateCollection(List<String> words, String lang)  {
+    public static List<Word> translateCollectionSeq(List<String> words, String lang)  {
         List<Word> translatedWords = new ArrayList<>(words.size());
         List<String> errors = new ArrayList<>();
         for(String w : words)   {
@@ -191,6 +206,84 @@ public class Word {
         }
 
         return translatedWords;
+    }
+
+    /**
+     *
+     * @param words words to be translated
+     * @param lang src-dest languages
+     * @return a new collection containing the original words and their translation
+     */
+    public static List<Word> translateCollectionParallel(List<Word> words, String lang)  {
+        ConcurrentHashMap<String, Word> translatedWords = new ConcurrentHashMap<>(words.size());
+
+        final ExecutorService pool = Executors.newFixedThreadPool(Constants.NB_PROCS * Constants.FACTOR);
+        final ExecutorCompletionService<Word> completionService = new ExecutorCompletionService<>(pool);
+        for (final Word w : words) {
+            completionService.submit(() -> new Word(w.getOriginalForm(), w.getSimplifiedForm(),
+                    getTranslation(w.getSimplifiedForm(), lang)));
+        }
+
+        for (int i = 0; i < words.size(); i++) {
+            try {
+                final Future<Word> future = completionService.take();
+                final Word translation = future.get();
+                translatedWords.putIfAbsent(translation.getSimplifiedForm(), translation);
+
+            } catch (InterruptedException | ExecutionException e) {
+            }
+        }
+
+        pool.shutdown();
+        return new ArrayList<>(translatedWords.values());
+    }
+
+    /**
+     *
+     * @param words a given collection of words
+     * @return a collection of unique base forms of the given words
+     */
+    public static List<Word> simplifySeq(List<String> words) {
+        List<Word> simplifiedWords = new ArrayList<>(words.size());
+
+        for (String word : words) {
+            try {
+                Word simplified = Word.simplify(word, Constants.WIN_ENC);
+                if (!simplifiedWords.contains(simplified)) {
+                    simplifiedWords.add(simplified);
+                }
+            } catch (Exception e) {
+            }
+        }
+
+        return simplifiedWords;
+    }
+
+    /**
+     *
+     * @param words a given collection of words to simplify
+     * @param factor multiple used on the number of available processors. Used to compute the number of threads.
+     */
+    public static List<Word> simplifyParallel(List<String> words, int factor) {
+        ConcurrentHashMap<String, Word> simplifiedWords = new ConcurrentHashMap<>(words.size());
+        final ExecutorService pool = Executors.newFixedThreadPool(Constants.NB_PROCS * factor);
+        final ExecutorCompletionService<Word> completionService = new ExecutorCompletionService<>(pool);
+        for (final String w : words) {
+            completionService.submit(() -> Word.simplify(w, Constants.WIN_ENC));
+        }
+
+        for (int i = 0; i < words.size(); i++) {
+            try {
+                final Future<Word> future = completionService.take();
+                final Word simplified = future.get();
+                simplifiedWords.putIfAbsent(simplified.getSimplifiedForm(), simplified);
+
+            } catch (InterruptedException | ExecutionException e) {
+            }
+        }
+
+        pool.shutdown();
+        return new ArrayList<>(simplifiedWords.values());
     }
 
     @Override
