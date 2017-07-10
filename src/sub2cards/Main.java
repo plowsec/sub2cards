@@ -40,8 +40,8 @@ public class Main {
     }
 
     public static void simplifyParallel(List<String> words, int factor) {
-        List<String> simplifiedWords = new ArrayList<>(words.size());
-        List<String> errors = new ArrayList<>();
+        ConcurrentHashMap<String, Integer> simplifiedWords = new ConcurrentHashMap<>(words.size());
+        ConcurrentHashMap<String, Integer> errors = new ConcurrentHashMap<>();
         int availableProcs = Runtime.getRuntime().availableProcessors();
         final ExecutorService pool = Executors.newFixedThreadPool(availableProcs * factor);
         final ExecutorCompletionService<String> completionService = new ExecutorCompletionService<>(pool);
@@ -59,12 +59,10 @@ public class Main {
             try {
                 final Future<String> future = completionService.take();
                 final String simplified = future.get();
-                if (!simplifiedWords.contains(simplified)) {
-                    simplifiedWords.add(simplified);
-                    //System.out.println(words.get(i) + " is actually : " + simplified);
-                }
+                simplifiedWords.putIfAbsent(simplified, 0);
+
             } catch (InterruptedException | ExecutionException e) {
-                errors.add(e.getMessage());
+                errors.putIfAbsent(e.getMessage(), 0);
                 //e.printStackTrace();
             }
         }
@@ -95,7 +93,7 @@ public class Main {
 
         long parallelTime = endTime - startTime;
         parallelTime = TimeUnit.MILLISECONDS.convert(parallelTime, TimeUnit.NANOSECONDS);
-        System.out.printf("[*] Parallel, with %d threads : %d [ms]", availableProcs * factor, parallelTime);
+        System.out.printf("[*] Parallel, with %d threads : %d [ms]\n", availableProcs * factor, parallelTime);
 
         startTime = System.nanoTime();
         factor = 4;
@@ -105,7 +103,7 @@ public class Main {
         parallelTime = endTime - startTime;
         parallelTime = TimeUnit.MILLISECONDS.convert(parallelTime, TimeUnit.NANOSECONDS);
 
-        System.out.printf("[*] Parallel, with %d threads : %d [ms]", availableProcs * factor, parallelTime);
+        System.out.printf("[*] Parallel, with %d threads : %d [ms]\n", availableProcs * factor, parallelTime);
     }
 
     public static void main(String[] args) {
