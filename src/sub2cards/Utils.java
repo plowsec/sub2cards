@@ -28,6 +28,17 @@ public class Utils {
         return !(input == null || input.isEmpty()) && input.chars().anyMatch(Character::isAlphabetic);
     }
 
+
+    public static String trimBefore(String text)   {
+        StringBuilder res = new StringBuilder();
+        for(int i = 0 ; i < text.length() ; i++)    {
+            if(Character.isAlphabetic(text.charAt(i)))
+                res.append(text.charAt(i));
+        }
+
+        return res.toString();
+    }
+
     /**
      * @param string a escaped unicode string
      * @return the unescaped form, more readable for humans.

@@ -61,4 +61,7 @@ public class Constants {
 
     //empty accent
     public static final String TONIC_ACCENT = "'";
+
+    //time separator symbol in a subtitle file
+    public static final String TIME_SEPARATOR = " --> ";
 }

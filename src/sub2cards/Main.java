@@ -50,6 +50,7 @@ public class Main {
         SubParse subParse = new SubParse(filePath);
         subParse.parse();
         List<Word> words = subParse.getSortedWords();
+        List<Line> lines = subParse.getLines();
         List<Word> simplifiedWords = Word.simplifyParallel(words, Constants.FACTOR);
         System.out.println("[*] Simplification done");
 
