@@ -11,7 +11,7 @@ public class Main {
 
 
 
-    static void benchmarkSimplification(List<String> words) {
+    static void benchmarkSimplification(List<Word> words) {
 
         long startTime = System.nanoTime();
         Word.simplifySeq(words);
@@ -49,8 +49,8 @@ public class Main {
             filePath = args[1];
         SubParse subParse = new SubParse(filePath);
         subParse.parse();
-        List<String> words = subParse.getSortedWords();
-        List<Word> simplifiedWords = Word.simplifyParallel(words, 4);
+        List<Word> words = subParse.getSortedWords();
+        List<Word> simplifiedWords = Word.simplifyParallel(words, Constants.FACTOR);
         System.out.println("[*] Simplification done");
 
         //benchmarkSimplification(words);

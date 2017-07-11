@@ -24,21 +24,23 @@ public class SubParseTest {
     public void parseFileTest() {
         SubParse subParseTest = new SubParse("tests/test.srt");
         subParseTest.parse();
-        List<String> words = subParseTest.getSortedWords();
-        Map<String, Integer> dict = subParseTest.getDictionnary();
+        List<Word> words = subParseTest.getSortedWords();
+        Map<String, Word> dict = subParseTest.getDictionnary();
         assertTrue("right count of words", words.size() == 7);
-        assertTrue("most occurring word", words.get(0).equals("est"));
-        assertTrue("occurences count for most occurring word", dict.get(words.get(0)) == 4);
+        assertTrue("most occurring word", words.get(0).getOriginalForm().equals("est"));
+        assertTrue("occurences count for most occurring word",
+                dict.get(words.get(0).getOriginalForm()).getOccurrence() == 4);
     }
 
     @Test
     public void parseSubtitleTest() {
         SubParse subParseTest = new SubParse("tests/got-simple.srt");
         subParseTest.parse();
-        List<String> words = subParseTest.getSortedWords();
-        Map<String, Integer> dict = subParseTest.getDictionnary();
-        assertTrue("most occurring word", words.get(0).equals("в"));
-        assertTrue("occurences count for most occurring word", dict.get(words.get(0)) == 2);
+        List<Word> words = subParseTest.getSortedWords();
+        Map<String, Word> dict = subParseTest.getDictionnary();
+        assertTrue("most occurring word", words.get(0).getOriginalForm().equals("в"));
+        assertTrue("occurences count for most occurring word",
+                dict.get(words.get(0).getOriginalForm()).getOccurrence() == 2);
     }
 
     @Test
@@ -74,11 +76,11 @@ public class SubParseTest {
     @Test
     public void simplifyTest2() {
         try {
-            assertTrue("infinitive", Word.simplify("жил", Constants.WIN_ENC).getSimplifiedForm().equals("жить"));
+            assertTrue("infinitive", Word.simplify("жил", Constants.WIN_ENC).equals("жить"));
 
             assertTrue("стали should give сталь or стать",
-                    Word.simplify("стали", Constants.WIN_ENC).getSimplifiedForm().equals("сталь") ||
-                            Word.simplify("стали", Constants.WIN_ENC).getSimplifiedForm().equals("стать")
+                    Word.simplify("стали", Constants.WIN_ENC).equals("сталь") ||
+                            Word.simplify("стали", Constants.WIN_ENC).equals("стать")
             );
         } catch (Exception e) {
             e.printStackTrace();
@@ -110,5 +112,32 @@ public class SubParseTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void testEqualsAndHash() {
+        Word word1 = new Word.WordBuilder("сталь")
+                .withBaseForm("сталь")
+                .withContext("help")
+                .withOccurrence(4)
+                .withTranslation("test")
+                .build();
+        Word word2 = new Word.WordBuilder("сталь")
+                .withBaseForm("сталь")
+                .withContext("help")
+                .withOccurrence(4)
+                .withTranslation("test")
+                .build();
+        assertTrue("same words", word1.equals(word2));
+        assertTrue("same words", word2.equals(word1));
+
+        word2 = new Word.WordBuilder("сталь")
+                .withBaseForm("сталь")
+                .withContext("help")
+                .withTranslation("test")
+                .build();
+
+        assertFalse("same words, not same occurrence", word1.equals(word2));
+        assertFalse("same words, not same occurrence", word2.equals(word1));
     }
 }

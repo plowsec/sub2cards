@@ -8,8 +8,9 @@ import java.util.*;
  */
 public class SubParse {
 
-    private String subtitleFile; //path to the subtitle file
-    private HashMap<String, Integer> words; //to remember words and their occurrences
+    private final String subtitleFile; //path to the subtitle file
+    private HashMap<String, Word> words; //to remember words and their occurrences
+    //private Set<Word> words; //to remember the collected words
 
     public SubParse(String path) {
         subtitleFile = path;
@@ -24,25 +25,27 @@ public class SubParse {
     public void parse() {
         try (BufferedReader br = new BufferedReader(
                 new InputStreamReader(new FileInputStream(subtitleFile), Constants.DEFAULT_ENCODING))) {
-            String line = br.readLine();
-            while (line != null) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                if(!Utils.isAlphabetic(line))
+                    continue;
+
                 List<String> w = Arrays.asList(line
                         .trim()
-                        .replaceAll("[\\[()\\]{}+\\\\/-]", "")
-                        .replaceAll("[.,?!]", "")
+                        .replaceAll(Constants.BAD_CHARS, Constants.WITH_NOTHING)
                         .toLowerCase()
-                        .split("\\s+"));
+                        .split(Constants.ON_WHITESPACES));
                 //w.stream().sequential().forEach(i -> words.merge(i, 1, (key, oldCount) -> oldCount+1));
                 for (String word : w) {
                     if (!Utils.isAlphabetic(word))
                         continue;
                     if (words.containsKey(word)) {
-                        words.compute(word, (k, v) -> v + 1);
+
+                        words.compute(word, (k, v) -> v.incrementOccurrence());
                     } else {
-                        words.put(word, 1);
+                        words.put(word, new Word.WordBuilder(word).withContext(line).build());
                     }
                 }
-                line = br.readLine();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -52,20 +55,19 @@ public class SubParse {
     /**
      * @return the collected words, sorted by occurences
      */
-    public List<String> getSortedWords() {
-        List<String> res = new ArrayList<>(words.entrySet().size());
-        words.entrySet()
+    public List<Word> getSortedWords() {
+        List<Word> res = new ArrayList<>(words.entrySet().size());
+        words.values()
                 .stream()
-                .sorted(Map.Entry.<String, Integer>comparingByValue()
-                        .reversed())
-                .forEach(i -> res.add(i.getKey()));
+                .sorted(Comparator.comparing(Word::getOccurrence).reversed())
+                .forEach(res::add);
         return res;
     }
 
     /**
      * @return the internal dictionnary. todo : make a copy instead of leaking the internal collection
      */
-    public Map<String, Integer> getDictionnary() {
+    public Map<String, Word> getDictionnary() {
         return words;
     }
 }

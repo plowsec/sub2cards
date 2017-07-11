@@ -49,4 +49,16 @@ public class Constants {
 
     //multiple used on the number of processsors
     public static final int FACTOR = 4;
+
+    //bad chars to remove from subtitle line
+    public static final String BAD_CHARS = "[.,?!\\[()\\]{}+\\\\/-]";
+
+    //whitespace modifier
+    public static final String ON_WHITESPACES = "\\s+";
+
+    //empty string
+    public static final String WITH_NOTHING = "";
+
+    //empty accent
+    public static final String TONIC_ACCENT = "'";
 }
