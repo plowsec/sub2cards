@@ -13,6 +13,8 @@ import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static sub2cards.Constants.*;
+
 /**
  * handles a collected word from a subtitle file. This class should be able to retrieve the original
  * morphological form of the word and its translation
@@ -140,7 +142,7 @@ public class Word {
 
         String url;
         try {
-            url = String.format(Constants.STARLING_URL_FMT, URLEncoder.encode(originalWord, encoding));
+            url = String.format(STARLING_URL_FMT, URLEncoder.encode(originalWord, encoding));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
             return originalWord;
@@ -150,7 +152,7 @@ public class Word {
         if (links.isEmpty()) {
             throw new Exception(originalWord);
         }
-        return links.get(0).replaceAll(Constants.TONIC_ACCENT, Constants.WITH_NOTHING);
+        return links.get(0).replaceAll(TONIC_ACCENT, WITH_NOTHING);
     }
 
     /**
@@ -164,7 +166,7 @@ public class Word {
      * @throws Exception in case the service used didn't know the word
      */
     public static String simplify(String word) throws Exception {
-        return simplify(word, Constants.DEFAULT_ENCODING);
+        return simplify(word, DEFAULT_ENCODING);
     }
 
 
@@ -197,14 +199,13 @@ public class Word {
      * @return a list of matches
      */
     public static List<String> extractResultsFromData(String string) {
-        return extractResultsFromData(string, Constants.STARLING_REGEX);
+        return extractResultsFromData(string, STARLING_REGEX);
     }
 
     /**
      * @param uri      location of the resource
      * @param encoding encoding to be used
      * @return the raw content retrieved at the given location or null in case of problems
-     * @todo this should be asynchronous
      */
     public static String getRemoteContent(String uri, String encoding) {
 
@@ -232,12 +233,11 @@ public class Word {
     /**
      * @param uri location of the resource
      * @return the raw content retrieved at the given location or null in case of problems
-     * @todo this should be asynchronous
      * <p>
      * Default encoding used is UTF8
      */
     public static String getRemoteContent(String uri) {
-        return getRemoteContent(uri, Constants.DEFAULT_ENCODING);
+        return getRemoteContent(uri, DEFAULT_ENCODING);
     }
 
     /**
@@ -253,9 +253,9 @@ public class Word {
 
         if(yandexAPIKey.isEmpty())
             throw new RuntimeException("[!] Problem fetching Yandex API key. Do you have one ?");
-        final String request = String.format(Constants.REQ_FMT, yandexAPIKey, text, lang);
+        final String request = String.format(REQ_FMT, yandexAPIKey, text, lang);
         final String content = getRemoteContent(request);
-        List<String> translation = extractResultsFromData(content, Constants.YANDEX_REGEX);
+        List<String> translation = extractResultsFromData(content, YANDEX_REGEX);
         if(translation.isEmpty())
             throw new Exception(text);
 
@@ -270,7 +270,7 @@ public class Word {
      */
     public static String getTranslation(String text) throws Exception   {
 
-        return getTranslation(text, Constants.DEFAULT_LANG);
+        return getTranslation(text, DEFAULT_LANG);
     }
 
     /**
@@ -308,7 +308,7 @@ public class Word {
     public static List<Word> translateCollectionParallel(List<Word> words, String lang)  {
         ConcurrentHashMap<String, Word> translatedWords = new ConcurrentHashMap<>(words.size());
 
-        final ExecutorService pool = Executors.newFixedThreadPool(Constants.NB_PROCS * Constants.FACTOR);
+        final ExecutorService pool = Executors.newFixedThreadPool(NB_PROCS * FACTOR);
         final ExecutorCompletionService<Word> completionService = new ExecutorCompletionService<>(pool);
         for (final Word w : words) {
             completionService.submit(() -> w.setTranslation(getTranslation(w.getBaseForm(), lang)));
@@ -338,7 +338,7 @@ public class Word {
 
         for (Word word : words) {
             try {
-                String simplified = Word.simplify(word.getOriginalForm(), Constants.WIN_ENC);
+                String simplified = Word.simplify(word.getOriginalForm(), WIN_ENC);
                 Word baseForm =word.setBaseForm(simplified);
                 if (!simplifiedWords.contains(baseForm)) {
                     simplifiedWords.add(baseForm);
@@ -355,13 +355,14 @@ public class Word {
      *
      * @param words a given collection of words to simplify
      * @param factor multiple used on the number of available processors. Used to compute the number of threads.
+     * @return a new list of Word instances, with translation field updated
      */
     public static List<Word> simplifyParallel(List<Word> words, int factor) {
         ConcurrentHashMap<String, Word> simplifiedWords = new ConcurrentHashMap<>(words.size());
-        final ExecutorService pool = Executors.newFixedThreadPool(Constants.NB_PROCS * factor);
+        final ExecutorService pool = Executors.newFixedThreadPool(NB_PROCS * factor);
         final ExecutorCompletionService<Word> completionService = new ExecutorCompletionService<>(pool);
         for (final Word w : words) {
-            completionService.submit(() -> w.setBaseForm(Word.simplify(w.getOriginalForm(), Constants.WIN_ENC)));
+            completionService.submit(() -> w.setBaseForm(Word.simplify(w.getOriginalForm(), WIN_ENC)));
         }
 
         for (int i = 0; i < words.size(); i++) {

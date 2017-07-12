@@ -9,8 +9,6 @@ import java.util.concurrent.*;
  */
 public class Main {
 
-
-
     static void benchmarkSimplification(List<Word> words) {
 
         long startTime = System.nanoTime();
@@ -50,7 +48,9 @@ public class Main {
         SubParse subParse = new SubParse(filePath);
         subParse.parse();
         List<Word> words = subParse.getSortedWords();
-        List<Word> simplifiedWords = Word.simplifyParallel(words, Constants.FACTOR);
+        List<Line> lines = subParse.getLines();
+
+        /*List<Word> simplifiedWords = Word.simplifyParallel(words, Constants.FACTOR);
         System.out.println("[*] Simplification done");
 
         //benchmarkSimplification(words);
@@ -59,6 +59,9 @@ public class Main {
         System.out.println("[*] Translation done");
         for(Word w : translatedWords) {
             System.out.println(w);
-        }
+        }*/
+
+        List<Line> withTranslation = Line.translateLinesParallel(lines, Constants.DEFAULT_LANG);
+        FlashCard.exportHTML(withTranslation, "tests/video.avi", "tests");
     }
 }
