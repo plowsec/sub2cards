@@ -51,6 +51,10 @@ public class Main {
         subParse.parse();
         List<Word> words = subParse.getSortedWords();
         List<Line> lines = subParse.getLines();
+        System.out.println("[*] First line duration : " + lines.get(0).getDuration());
+        Line l = lines.get(0);
+        System.out.println(l);
+        FlashCard.extractSound("tests/video.avi", "sallmple.mp3", l.getTimeStart(), l.getTimeEnd());
         List<Word> simplifiedWords = Word.simplifyParallel(words, Constants.FACTOR);
         System.out.println("[*] Simplification done");
 

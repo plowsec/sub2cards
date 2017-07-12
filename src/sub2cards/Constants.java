@@ -64,4 +64,8 @@ public class Constants {
 
     //time separator symbol in a subtitle file
     public static final String TIME_SEPARATOR = " --> ";
+
+    //ffmpeg cmd
+    public static final String FFMPEG_CMD_FMT = "ffmpeg -i %s -ss %s -to %s -f mp3 %s";
+
 }

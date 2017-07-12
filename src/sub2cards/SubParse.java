@@ -2,6 +2,7 @@ package sub2cards;
 
 import java.io.*;
 import java.util.*;
+import static sub2cards.Constants.*;
 import java.util.stream.IntStream;
 
 /**
@@ -26,17 +27,17 @@ public class SubParse {
      */
     public void parse() {
         try (BufferedReader br = new BufferedReader(
-                new InputStreamReader(new FileInputStream(subtitleFile), Constants.DEFAULT_ENCODING))) {
+                new InputStreamReader(new FileInputStream(subtitleFile), DEFAULT_ENCODING))) {
             String line;
             String timeStart = "";
             String timeEnd = "";
             boolean reset = false;
             while ((line = br.readLine()) != null) {
                 if(!Utils.isAlphabetic(line))   {
-                    if(line.contains(Constants.TIME_SEPARATOR))  {
-                        String[] times = line.split(Constants.TIME_SEPARATOR);
-                        timeStart = times[0];
-                        timeEnd = times[1];
+                    if(line.contains(TIME_SEPARATOR))  {
+                        String[] times = line.split(TIME_SEPARATOR);
+                        timeStart = times[0].replaceAll(",", ".");
+                        timeEnd = times[1].replaceAll(",", ".");
                     }
                     reset = true;
                     continue;
@@ -54,9 +55,9 @@ public class SubParse {
 
                 List<String> w = Arrays.asList(line
                         .trim()
-                        .replaceAll(Constants.BAD_CHARS, Constants.WITH_NOTHING)
+                        .replaceAll(BAD_CHARS, WITH_NOTHING)
                         .toLowerCase()
-                        .split(Constants.ON_WHITESPACES));
+                        .split(ON_WHITESPACES));
                 //w.stream().sequential().forEach(i -> words.merge(i, 1, (key, oldCount) -> oldCount+1));
                 for (String word : w) {
                     if (!Utils.isAlphabetic(word))
