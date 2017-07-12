@@ -54,8 +54,12 @@ public class Main {
         System.out.println("[*] First line duration : " + lines.get(0).getDuration());
         Line l = lines.get(0);
         System.out.println(l);
-        FlashCard.extractSound("tests/video.avi", "sallmple.mp3", l.getTimeStart(), l.getTimeEnd());
-        List<Word> simplifiedWords = Word.simplifyParallel(words, Constants.FACTOR);
+        /*FlashCard.extractSound(
+                "tests/video.avi",
+                "sallmple.mp3",
+                l.getTimeStart(),
+                l.getTimeEnd());*/
+        /*List<Word> simplifiedWords = Word.simplifyParallel(words, Constants.FACTOR);
         System.out.println("[*] Simplification done");
 
         //benchmarkSimplification(words);
@@ -64,6 +68,9 @@ public class Main {
         System.out.println("[*] Translation done");
         for(Word w : translatedWords) {
             System.out.println(w);
-        }
+        }*/
+
+        List<Line> withTranslation = Line.translateLinesParallel(lines, Constants.DEFAULT_LANG);
+        FlashCard.exportHTML(withTranslation, "flashcards.html");
     }
 }

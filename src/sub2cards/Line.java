@@ -1,11 +1,18 @@
 package sub2cards;
 
+import java.net.URLEncoder;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.*;
+
+import static sub2cards.Constants.FACTOR;
+import static sub2cards.Constants.NB_PROCS;
 
 /**
  * Represents a sentence in a subtitle file
@@ -13,15 +20,6 @@ import java.util.Objects;
 public class Line {
 
     private final String text;
-
-    public String getTimeStart() {
-        return timeStart;
-    }
-
-    public String getTimeEnd() {
-        return timeEnd;
-    }
-
     private final String timeStart;
     private final String timeEnd;
     private String translation;
@@ -45,6 +43,14 @@ public class Line {
         translation = line.translation;
     }
 
+    public String getTimeStart() {
+        return timeStart;
+    }
+
+    public String getTimeEnd() {
+        return timeEnd;
+    }
+
     public Line setTranslation(String translation)    {
         this.translation = translation;
         return new Line(this);
@@ -52,6 +58,10 @@ public class Line {
 
     public String getText() {
         return text;
+    }
+
+    public String getTranslation()  {
+        return translation;
     }
 
     public long getDuration()    {
@@ -62,6 +72,38 @@ public class Line {
 
     public Line append(String text) {
        return new Line(this.text +" " + text, timeStart, timeEnd, translation);
+    }
+
+    /**
+     *
+     * @param lines lines to be translated
+     * @param lang src-dest languages
+     * @return a new collection containing the original words and their translation
+     */
+    public static List<Line> translateLinesParallel(List<Line> lines, String lang)  {
+
+        List<Line> translatedLines = new ArrayList<>(lines.size());
+        final ExecutorService pool = Executors.newFixedThreadPool(NB_PROCS * FACTOR);
+        final ExecutorCompletionService<Line> completionService = new ExecutorCompletionService<>(pool);
+        for (final Line l : lines) {
+            completionService.submit(() -> l.setTranslation(
+                    Word.getTranslation(
+                            URLEncoder.encode(l.getText(), Constants.DEFAULT_ENCODING),
+                            lang)));
+        }
+
+        for (int i = 0; i < lines.size(); i++) {
+            try {
+                final Future<Line> future = completionService.take();
+                final Line translation = future.get();
+                translatedLines.add(translation);
+
+            } catch (InterruptedException | ExecutionException e) {
+            }
+        }
+
+        pool.shutdown();
+        return translatedLines;
     }
 
     @Override

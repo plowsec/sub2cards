@@ -68,4 +68,97 @@ public class Constants {
     //ffmpeg cmd
     public static final String FFMPEG_CMD_FMT = "ffmpeg -i %s -ss %s -to %s -f mp3 %s";
 
+    //base html
+    public static final String BASE_HTML = "<html>\n" +
+            "  <head>\n" +
+            "    <title>Flash Cards</title>\n" +
+            "    <meta charset=\"UTF-8\">\n" +
+            "    <link href=\"style.css\" rel=\"stylesheet\" type=\"text/css\">\n" +
+            "     <!-- Latest compiled and minified CSS -->\n" +
+            "    <link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\" integrity=\"sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u\" crossorigin=\"anonymous\">\n" +
+            "    <!-- Optional theme -->\n" +
+            "    <link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css\" integrity=\"sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp\" crossorigin=\"anonymous\">\n" +
+            "    <!-- Latest compiled and minified JavaScript -->\n" +
+            "    <script src=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js\" integrity=\"sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa\" crossorigin=\"anonymous\"></script>\n" +
+            "    <script src=\"https://code.jquery.com/jquery-3.2.1.min.js\"></script>\n" +
+            "    <style>\n" +
+            "\n" +
+            "\n" +
+            "    .thumb {\n" +
+            "        margin-bottom: 30px;\n" +
+            "        min-height: 300px;\n" +
+            "    }\n" +
+            "\n" +
+            "    footer {\n" +
+            "        margin: 50px 0;\n" +
+            "    }\n" +
+            "    \n" +
+            "    .subtitle .play-button {\n" +
+            "        position: absolute;\n" +
+            "        left: 20;\n" +
+            "        top: 0;\n" +
+            "    }\n" +
+            "\n" +
+            "    .subtitle .play-button {\n" +
+            "        z-index: 1;\n" +
+            "    }\n" +
+            "    .subtitle .text {\n" +
+            "        margin-left: 10px;\n" +
+            "    }\n" +
+            "\n" +
+            "    .subtitle .text p {\n" +
+            "        margin: 0 0 5px 0;\n" +
+            "        max-width:70%;\n" +
+            "    }\n" +
+            "    </style>\n" +
+            "  </head>\n" +
+            "  <body>\n" +
+            "      \n" +
+            "      <!-- Page Content -->\n" +
+            "    <div class=\"container\">\n" +
+            "\n" +
+            "        <div class=\"row\">\n" +
+            "\n" +
+            "            <div class=\"col-lg-12\">\n" +
+            "                <h1 class=\"page-header\">Flash Cards Gallery</h1>\n" +
+            "            </div>";
+
+    //html code for a thumbnail, to format with thumbnailPath, #audio, #audio, audioPath, text1, text2
+    public static final String THUMBNAIL_HTML_FMT = "<div class=\"col-lg-4 col-md-4 col-xs-4 thumb\">\n" +
+            "                <div class=\"subtitle\">\n" +
+            "                    <img class=\"thumbnail\" src=\"%s\">\n" +
+            "                    <img class=\"play-button\" src=\"play.svg\"\n" +
+            "                      onclick=\"document.getElementById('audio-%d').play()\">\n" +
+            "                   <audio id=\"audio-%d\" src=\"%s\"></audio>\n" +
+            "                   <div class=\"text caption\">\n" +
+            "                      <p class=\"foreign\" lang=\"en\">%s</p>\n" +
+            "                      <p class=\"native\" lang=\"ru\">%s</p>\n" +
+            "                   </div>\n" +
+            "                </div>\n" +
+            "            </div>";
+
+    //html footer
+    public static final String BASE_HTML_END = "\n" +
+            "        <hr>\n" +
+            "\n" +
+            "        <!-- Footer -->\n" +
+            "        <footer>\n" +
+            "            <div class=\"row\">\n" +
+            "                <div class=\"col-lg-12\">\n" +
+            "                    <p>Copyright &copy; Your Website 2014</p>\n" +
+            "                </div>\n" +
+            "            </div>\n" +
+            "        </footer>\n" +
+            "\n" +
+            "    </div>\n" +
+            "    <!-- /.container -->\n" +
+            "\n" +
+            "    <!-- jQuery -->\n" +
+            "<script\n" +
+            "\t\t\t  src=\"https://code.jquery.com/jquery-3.2.1.min.js\"\n" +
+            "\t\t\t  integrity=\"sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=\"\n" +
+            "\t\t\t  crossorigin=\"anonymous\"></script>\n" +
+            "  </body>\n" +
+            "</html>";
+
 }

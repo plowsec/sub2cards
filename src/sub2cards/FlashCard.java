@@ -1,6 +1,11 @@
 package sub2cards;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
 
 /**
  * Created by vladimir on 12.07.17.
@@ -49,5 +54,27 @@ public class FlashCard {
             throw new RuntimeException("[!] Sound asset could not be extracted : " + inputPath);
         else if(!(output.length()>0))
             throw new RuntimeException("[!] Sound asset could not be extracted : " + inputPath);
+    }
+
+    public static void exportHTML(List<Line> lines, String exportPath) {
+
+        StringBuilder output = new StringBuilder();
+        output.append(Constants.BASE_HTML);
+        for(int i = 0 ; i < lines.size() ; i++) {
+            output.append(String.format(Constants.THUMBNAIL_HTML_FMT,
+                    "tests/thm.jpg", i, i, "tests/thm-s.mp3",
+                    lines.get(i).getTranslation(),
+                    lines.get(i).getText()));
+        }
+
+        output.append(Constants.BASE_HTML_END);
+
+        //dump to disk
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(exportPath), Constants.DEFAULT_ENCODING))) {
+            writer.write(output.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

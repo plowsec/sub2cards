@@ -32,8 +32,10 @@ public class Utils {
     public static String trimBefore(String text)   {
         StringBuilder res = new StringBuilder();
         for(int i = 0 ; i < text.length() ; i++)    {
-            if(Character.isAlphabetic(text.charAt(i)))
-                res.append(text.charAt(i));
+            if(Character.isAlphabetic(text.charAt(i)))  {
+                res.append(text.substring(i));
+                break;
+            }
         }
 
         return res.toString();
