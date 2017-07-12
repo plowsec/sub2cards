@@ -1,7 +1,7 @@
 # sub2cards
 Tool to generate vocabulary flashcards from a subtitle file
 
-[[https://raw.githubusercontent.com/plowsec/sub2cards/master/preview.png |alt=preview]]
+![test](https://raw.githubusercontent.com/plowsec/sub2cards/master/preview.png)
 
 # Features
 
