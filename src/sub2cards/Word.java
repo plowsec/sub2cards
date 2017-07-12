@@ -206,7 +206,6 @@ public class Word {
      * @param uri      location of the resource
      * @param encoding encoding to be used
      * @return the raw content retrieved at the given location or null in case of problems
-     * @todo this should be asynchronous
      */
     public static String getRemoteContent(String uri, String encoding) {
 
@@ -234,7 +233,6 @@ public class Word {
     /**
      * @param uri location of the resource
      * @return the raw content retrieved at the given location or null in case of problems
-     * @todo this should be asynchronous
      * <p>
      * Default encoding used is UTF8
      */
@@ -357,6 +355,7 @@ public class Word {
      *
      * @param words a given collection of words to simplify
      * @param factor multiple used on the number of available processors. Used to compute the number of threads.
+     * @return a new list of Word instances, with translation field updated
      */
     public static List<Word> simplifyParallel(List<Word> words, int factor) {
         ConcurrentHashMap<String, Word> simplifiedWords = new ConcurrentHashMap<>(words.size());
