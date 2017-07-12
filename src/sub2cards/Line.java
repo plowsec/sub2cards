@@ -51,8 +51,14 @@ public class Line {
         return timeEnd;
     }
 
+    /**
+     * allows to override the translation field and force capitalization
+     * @param translation the new value for translation
+     * @return a new instance of Line
+     */
     public Line setTranslation(String translation)    {
-        this.translation = translation;
+
+        this.translation = translation.substring(0,1).toUpperCase() + translation.substring(1);
         return new Line(this);
     }
 

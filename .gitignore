@@ -4,3 +4,6 @@ out/*
 *.properties
 *.avi
 *.mp3
+*.jpg
+*.html
+*.svg
