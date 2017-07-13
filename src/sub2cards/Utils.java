@@ -1,10 +1,23 @@
 package sub2cards;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * simple utility class for generic useful functions
@@ -31,10 +44,10 @@ public class Utils {
     }
 
 
-    public static String trimBefore(String text)   {
+    public static String trimBefore(String text) {
         StringBuilder res = new StringBuilder();
-        for(int i = 0 ; i < text.length() ; i++)    {
-            if(Character.isAlphabetic(text.charAt(i)))  {
+        for (int i = 0; i < text.length(); i++) {
+            if (Character.isAlphabetic(text.charAt(i))) {
                 res.append(text.substring(i));
                 break;
             }
@@ -62,11 +75,12 @@ public class Utils {
 
     /**
      * taken as is from https://stackoverflow.com/questions/3103652/hash-string-via-sha-256-in-java
+     *
      * @param base string to be hashed
      * @return the sha256 hash of base
      */
     public static String sha256(String base) {
-        try{
+        try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(base.getBytes(Constants.DEFAULT_ENCODING));
             StringBuffer hexString = new StringBuffer();
@@ -78,13 +92,14 @@ public class Utils {
             }
 
             return hexString.toString();
-        } catch(Exception ex){
+        } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
 
     /**
      * used to generate a random string of arbitrary length for non-security purpose.
+     *
      * @param length length of the random string
      * @return a random string of length 'length'
      */
@@ -95,17 +110,103 @@ public class Utils {
 
     /**
      * used to generate a random string of arbitrary length for non-security purpose.
+     *
      * @param charset charset to use
-     * @param length length of the random string
+     * @param length  length of the random string
      * @return a random string of length 'length'
      */
     public static String randomString(String charset, int length) {
         StringBuilder salt = new StringBuilder();
         Random rnd = new Random();
         while (salt.length() < length) {
-            int index = (int)(rnd.nextFloat() * charset.length());
+            int index = (int) (rnd.nextFloat() * charset.length());
             salt.append(charset.charAt(index));
         }
         return salt.toString();
+    }
+
+
+    /**
+     * used to generate the collection.anki2 databse
+     *
+     * @param sql sql allowing to generate the database
+     */
+    public static void createDataBase(String outputPath, String sql) {
+        Connection connection;
+        Statement statement;
+        File file = new File(outputPath);
+        if(file.exists())   {
+            file.delete();
+            System.out.println("[!] Deleted " + outputPath + " because it was on my way.");
+        }
+        try {
+            // connect to database - will create it if it does not exist
+            connection = DriverManager.getConnection("jdbc:sqlite:" + outputPath);
+            statement = connection.createStatement();
+
+            // execute the statement string
+            statement.executeUpdate(sql);
+            statement.close();
+            connection.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(0);
+        }
+    }
+
+    /**
+     * used to zip all the files located inside a directory.
+     * taken almost as is from :
+     * https://stackoverflow.com/questions/15968883/how-to-zip-a-folder-itself-using-java
+     *
+     * @param sourceDirPath the directory in which we want the files to zip are located
+     * @param zipFilePath output location of zip
+     */
+    public static void pack(String sourceDirPath, String zipFilePath){
+        Path p = null;
+        try {
+            if(Paths.get(zipFilePath).toFile().exists())
+                Paths.get(zipFilePath).toFile().delete();
+            p = Files.createFile(Paths.get(zipFilePath));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try (ZipOutputStream zs = new ZipOutputStream(Files.newOutputStream(p))) {
+            Path pp = Paths.get(sourceDirPath);
+            Files.walk(pp)
+                    .filter(path -> !Files.isDirectory(path))
+                    .forEach(path -> {
+                        ZipEntry zipEntry = new ZipEntry(pp.relativize(path).toString());
+                        try {
+                            zs.putNextEntry(zipEntry);
+                            zs.write(Files.readAllBytes(path));
+                            zs.closeEntry();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * after having generated an anki deck, lots of files are to be deleted
+     * @param directoryPath directory where the anki deck was generated
+     * @param assetsCounter max index value of assets, all files named
+     *                      from 0 to assetsCounter will be deleted
+     */
+    public static void cleanTemporaryFiles(String directoryPath, int assetsCounter) {
+        List<String> files = new ArrayList<>();
+        IntStream.range(0, assetsCounter).boxed().forEach(i -> files.add(directoryPath+"/"+String.valueOf(i)));
+        files.add(directoryPath+"/media");
+        files.add(directoryPath+"/collection.anki2");
+        files.forEach(i -> {
+            File f = new File(i);
+            if(f.exists())  {
+                boolean res = f.delete();
+                System.out.println("[*] Deleted temp file : " + i + ", success="+res);
+            }
+        });
     }
 }

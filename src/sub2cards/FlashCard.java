@@ -242,13 +242,14 @@ public class FlashCard {
         output.append(Constants.ANKI_FOOT);
 
         //dump to disk the sql file
-        try (Writer writer = new BufferedWriter(new OutputStreamWriter(
+        /*try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(exportPath+"/collection.anki2.sql"), Constants.DEFAULT_ENCODING))) {
             writer.write(output.toString());
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
 
+        Utils.createDataBase(exportPath+"/collection.anki2", output.toString());
         //dump to disk the media file
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(exportPath+"/media"), Constants.DEFAULT_ENCODING))) {
@@ -259,6 +260,12 @@ public class FlashCard {
 
         //parallely generate thumbnails and sound assets
         generateAssets(lines, subtitle, inputPath, exportPath);
+
+        //zip it
+        Utils.pack(exportPath, exportPath+"/"+subtitle+".apkg");
+
+        //delete temp files
+        Utils.cleanTemporaryFiles(exportPath, partId);
     }
 
     public static void testAnki() {
