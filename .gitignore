@@ -8,3 +8,11 @@ out/*
 *.html
 *.svg
 *.html~
+*.txt
+*.sql
+*.txt~
+*.sql~
+tests/apkg/*
+tests/sqltest/*
+tests/new-deck/*
+tests/media

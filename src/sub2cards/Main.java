@@ -62,6 +62,7 @@ public class Main {
         }*/
 
         List<Line> withTranslation = Line.translateLinesParallel(lines, Constants.DEFAULT_LANG);
-        FlashCard.exportHTML(withTranslation, "tests/video.avi", "tests");
+        /*FlashCard.exportHTML(withTranslation, "tests/video.avi", "tests");*/
+        FlashCard.exportAnki(withTranslation, "got-simple", "tests/video.avi", "tests/new-deck");
     }
 }
