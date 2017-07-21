@@ -4,10 +4,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import sub2cards.Constants;
-import sub2cards.SubParse;
-import sub2cards.Utils;
-import sub2cards.Word;
+import sub2cards.*;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -139,5 +136,97 @@ public class SubParseTest {
 
         assertFalse("same words, not same occurrence", word1.equals(word2));
         assertFalse("same words, not same occurrence", word2.equals(word1));
+    }
+
+    @Test
+    public void testArgumentsCollecting() {
+
+
+        try {
+            String[] args = {"hello"};
+            Main.collectArgs(args);
+            assertTrue(false);
+
+        }
+        catch (Exception e) {
+            assertTrue(e.getMessage().equals("Illegal parameter usage"));
+        }
+
+        try {
+            String[] args = {"-"};
+            Main.collectArgs(args);
+            assertTrue(false);
+
+        }
+        catch (Exception e) {
+            assertTrue(e.getMessage().equals("Error at argument -"));
+        }
+
+        try {
+            //should not crash
+            String[] args = {"-s", "hello.txt"};
+            Main.collectArgs(args);
+        }
+        catch (Exception e) {
+            assertTrue(false);
+        }
+
+        try {
+            String[] args = {"-s", "-t"};
+            Main.collectArgs(args);
+        }
+        catch (Exception e) {
+            assertTrue(false);
+        }
+
+        try {
+            String[] args = {"-s", "file1", "file2"};
+            Main.collectArgs(args);
+        }
+        catch (Exception e) {
+            assertTrue(false);
+        }
+    }
+
+    @Test
+    public void testCheckInput() {
+        try {
+            String[] args = {};
+            Map<String, List<String>> collectArgs = Main.collectArgs(args);
+            Main.parseInput(collectArgs);
+
+        } catch (Exception e) {
+            assertTrue(e.getMessage().equals("Not enough arguments"));
+        }
+
+        try {
+            String[] args = {"-h"};
+            Main.collectArgs(args);
+
+        }
+        catch (Exception e) {
+            assertTrue(false);
+        }
+
+        try {
+            String[] args = {"-z"};
+            Main.collectArgs(args);
+            Map<String, List<String>> collectArgs = Main.collectArgs(args);
+            Main.parseInput(collectArgs);
+            assertTrue(false);
+        }
+        catch (Exception e) {
+            assertTrue(e.getMessage().matches(".*Unknown argument.*"));
+        }
+
+        try {
+            String[] args = {"-h"};
+            Main.collectArgs(args);
+            Map<String, List<String>> collectArgs = Main.collectArgs(args);
+            Main.parseInput(collectArgs);
+        }
+        catch (Exception e) {
+            assertTrue(false);
+        }
     }
 }
