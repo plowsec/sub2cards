@@ -1,16 +1,25 @@
 package sub2cards;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.*;
+
 /**
  * Entry point for sub2cards project
  */
 public class Main {
-    private String exportFormat = "html";
-    private String[] sourceSubtitles;
-    private String[] targetSubtitles;
-    private String[] mediaFiles;
+    private static final ArrayList<String> supportedExportModes = new ArrayList<>(
+            Arrays.asList("words", "lines", "mixed"));
+    private static final ArrayList<String> supportedExportFormats = new ArrayList<>(
+            Arrays.asList("html", "anki", "quizlet"));
     private String languages = "en-ru";
+    private String exportMode = "lines";
+    private String exportFormat = "html";
+    private List<String> sourceSubtitles;
+    private List<String> targetSubtitles;
+    private List<String> mediaFiles;
+
     static void benchmarkSimplification(List<Word> words) {
 
         long startTime = System.nanoTime();
@@ -43,6 +52,17 @@ public class Main {
         System.out.printf("[*] Parallel, with %d threads : %d [ms]\n", availableProcs * factor, parallelTime);
     }
 
+    private static List checkPaths(List<String> args, String arg) {
+
+        if (args.size() < 1)
+            throw new RuntimeException("Invalid number of arguments to option " + arg);
+
+        for (String f : args)
+            if (!Files.exists(Paths.get(f)))
+                throw new RuntimeException("File doesn't exist : " + f);
+        return args;
+    }
+
     /**
      * options usages examples
      * sub2cards -e html|anki|quizlet
@@ -51,32 +71,72 @@ public class Main {
      * sub2cards -s file1 file2 file3 //mandatory
      * sub2cards -t file1 file2 file3
      * sub2cards -l ru //mandatory
+     * sub2cards -w words|lines|mixed
      * sub2cards
+     *
      * @param args collected arguments
      */
-    public static void parseInput(Map<String, List<String>> args) {
+    public static void parseInput(Map<String, List<String>> args, Main main) {
 
         List<String> options = Arrays.asList("-e", "-h", "-m", "-s", "-t", "-l", "-w");
-        if(args.keySet().size() < 1)
+        if (args.keySet().size() < 1)
             throw new RuntimeException("Not enough arguments");
 
-        for(String arg : args.keySet()) {
-            if(!options.contains(arg))
+        for (String arg : args.keySet()) {
+            if (!options.contains(arg))
                 throw new RuntimeException("Unknown argument : " + arg);
         }
 
-        for(String arg : args.keySet()) {
-            if(!options.contains(arg))
-                throw new RuntimeException("Unknown argument : " + arg);
-            switch(arg)    {
+        for (String arg : args.keySet()) {
+
+            switch (arg) {
                 case "-h":
                     printHelp();
+                    return;
+                case "-e":
+                    if (args.get(arg).size() != 1)
+                        throw new RuntimeException("Invalid number of arguments to option -e");
+                    if (!supportedExportFormats.contains(args.get(arg).get(0)))
+                        throw new RuntimeException("Invalid parameter used with option -e : "
+                                + args.get(arg).get(0));
+                    main.exportFormat = args.get(arg).get(0);
                     break;
-
+                case "-m":
+                    main.mediaFiles = checkPaths(args.get(arg), arg);
+                    break;
+                case "-s":
+                    main.sourceSubtitles = checkPaths(args.get(arg), arg);
+                    break;
+                case "-t":
+                    main.targetSubtitles = checkPaths(args.get(arg), arg);
+                    break;
+                case "-w":
+                    if (args.get(arg).size() != 1)
+                        throw new RuntimeException("Invalid number of arguments to option -w");
+                    if (!supportedExportModes.contains(args.get(arg).get(0)))
+                        throw new RuntimeException("Invalid parameter used with option -w : "
+                                + args.get(arg).get(0));
+                    main.exportMode = args.get(arg).get(0);
+                    break;
+                case "-l":
+                    if (args.get(arg).size() != 1)
+                        throw new RuntimeException("Invalid number of arguments to option -w");
+                    String a = args.get(arg).get(0);
+                    if (a.length() != 5 || a.charAt(2) != '-')
+                        throw new RuntimeException("Invalid language : " + a);
+                    break;
             }
         }
+
+
+        if ((!args.containsKey("-s") || !args.containsKey("-l")) && !args.containsKey("-h"))
+            throw new RuntimeException("-s and -l options are mandatory");
+
     }
 
+    /**
+     * simply prints a usage help for the tool
+     */
     private static void printHelp() {
         System.out.println("Usage: sub2cards -e [html|anki|quizlet] -s path -l [languages]");
         System.out.println("-h\t print this [h]elp");
@@ -92,13 +152,13 @@ public class Main {
                 "Note 2 : if -m is specified, thumbnails and audio extracts will be taken\n\t\tfrom the media files" +
                 "to illustrate the related subtitle line / word.\n" +
                 "Note 3 : for option -w, if 'words' is used, the subtitle files will be parsed,\n\t\t words collected " +
-                "and sorted by occurrences, and the flashcards will consist of theses words.\n\t\t If 'lines'" +
+                "and sorted by occurrences, and the flashcards will consist of theses words and their " +
+                "Yandex translation\n\t\t If 'lines'" +
                 "is used, then the flashcards will hold the lines as they appear in the subtitles.\n\t\tIf 'mixed'" +
                 "is used, then the flashcards will hold the lines, and below the words of the lines and their meaning");
     }
 
     /**
-     *
      * @param args commandline arguments
      * @return the collected arguments : each option has a list of own arguments
      */
@@ -126,10 +186,22 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        String filePath = "tests/got-simple.srt";
-        if (args.length > 0)
-            filePath = args[1];
-        SubParse subParse = new SubParse(filePath);
+        Main main = new Main();
+
+        main.sourceSubtitles= Arrays.asList("tests/got-simple.srt");
+        main.mediaFiles = Arrays.asList("tests/video.avi");
+
+        if (args.length > 0)    {
+            try {
+                parseInput(collectArgs(args), main);
+            }
+            catch(Exception e)  {
+                printHelp();
+                e.printStackTrace();
+                System.exit(-1);
+            }
+        }
+        SubParse subParse = new SubParse(main.sourceSubtitles.get(0));
         subParse.parse();
         List<Word> words = subParse.getSortedWords();
         List<Line> lines = subParse.getLines();
@@ -147,6 +219,6 @@ public class Main {
 
         List<Line> withTranslation = Line.translateLinesParallel(lines, Constants.DEFAULT_LANG);
         /*FlashCard.exportHTML(withTranslation, "tests/video.avi", "tests");*/
-        FlashCard.exportAnki(withTranslation, "got-simple", "tests/video.avi", "tests/new-deck");
+        FlashCard.exportAnki(withTranslation, "got-simple2", main.mediaFiles.get(0), "tests/new-deck");
     }
 }

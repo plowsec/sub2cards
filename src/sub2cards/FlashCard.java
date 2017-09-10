@@ -28,6 +28,7 @@ public class FlashCard {
      * @param cmd the cmd to execute on the local system
      */
     public static void runCmd(String cmd) {
+        //System.out.println(cmd);
         Runtime run = Runtime.getRuntime();
 
         Process pr;
@@ -92,7 +93,7 @@ public class FlashCard {
 
         String filename = extension ? outputPath + ".jpg" : outputPath;
         String cmd = String.format(Constants.FFMPEG_THUMBNAIL_EXTRACT_FMT,
-                inputPath, timeStart, filename);
+                timeStart, inputPath, filename);
         runCmd(cmd);
 
         //simple ugly check, use error stream please
@@ -226,7 +227,7 @@ public class FlashCard {
             String noteRequest = String.format(Constants.ANKI_NOTE_FMT, nid, guid, mod, flds, sfld, sum);
             output.append(noteRequest);
 
-            System.out.println(noteRequest);
+            //System.out.println(noteRequest);
 
             //generate card
             String cid = String.valueOf(mod + partId++);
@@ -248,6 +249,8 @@ public class FlashCard {
         } catch (IOException e) {
             e.printStackTrace();
         }*/
+
+        Utils.mkdir(exportPath);
 
         Utils.createDataBase(exportPath+"/collection.anki2", output.toString());
         //dump to disk the media file

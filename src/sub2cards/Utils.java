@@ -125,6 +125,32 @@ public class Utils {
         return salt.toString();
     }
 
+    /**
+     * used to create directories
+     * @param path where to create the directory
+     * @return true if a directory was succesfully created
+     */
+    public static boolean mkdir(String path)    {
+
+        File theDir = new File(path);
+
+        // if the directory does not exist, create it
+        if (!theDir.exists()) {
+            System.out.println("creating directory: " + theDir.getName());
+            boolean result = false;
+
+            try{
+                theDir.mkdir();
+                result = true;
+            }
+            catch(SecurityException se){
+                //handle it
+            }
+            return result;
+        }
+
+        return false;
+    }
 
     /**
      * used to generate the collection.anki2 databse

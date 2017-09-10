@@ -193,7 +193,8 @@ public class SubParseTest {
         try {
             String[] args = {};
             Map<String, List<String>> collectArgs = Main.collectArgs(args);
-            Main.parseInput(collectArgs);
+            Main main = new Main();
+            Main.parseInput(collectArgs, main);
 
         } catch (Exception e) {
             assertTrue(e.getMessage().equals("Not enough arguments"));
@@ -212,7 +213,8 @@ public class SubParseTest {
             String[] args = {"-z"};
             Main.collectArgs(args);
             Map<String, List<String>> collectArgs = Main.collectArgs(args);
-            Main.parseInput(collectArgs);
+            Main main = new Main();
+            Main.parseInput(collectArgs, main);
             assertTrue(false);
         }
         catch (Exception e) {
@@ -223,10 +225,47 @@ public class SubParseTest {
             String[] args = {"-h"};
             Main.collectArgs(args);
             Map<String, List<String>> collectArgs = Main.collectArgs(args);
-            Main.parseInput(collectArgs);
+            Main main = new Main();
+            Main.parseInput(collectArgs, main);
         }
         catch (Exception e) {
             assertTrue(false);
+        }
+
+        try {
+            String[] args = {"-e", "test"};
+            Main.collectArgs(args);
+            Map<String, List<String>> collectArgs = Main.collectArgs(args);
+            Main main = new Main();
+            Main.parseInput(collectArgs, main);
+            assertTrue(false);
+        }
+        catch (Exception e) {
+            assertTrue(e.getMessage().matches(".*Invalid parameter used with option.*"));
+        }
+
+        try {
+            String[] args = {"-l", "en-ru", "-s", "tests/got.srt", "-e", "html"};
+            Main.collectArgs(args);
+            Map<String, List<String>> collectArgs = Main.collectArgs(args);
+            Main main = new Main();
+            Main.parseInput(collectArgs, main);
+        }
+        catch (Exception e) {
+            System.out.println(e.getMessage());
+            assertTrue(false);
+        }
+
+        try {
+            String[] args = {"-e", "html", "-m", "tests/got.srt", "tests/yihaa"};
+            Main.collectArgs(args);
+            Map<String, List<String>> collectArgs = Main.collectArgs(args);
+            Main main = new Main();
+            Main.parseInput(collectArgs, main);
+            assertTrue(false);
+        }
+        catch (Exception e) {
+            assertTrue(e.getMessage().matches(".*File doesn't exist.*"));
         }
     }
 }

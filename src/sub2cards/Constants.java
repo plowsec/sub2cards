@@ -69,7 +69,7 @@ public class Constants {
     public static final String FFMPEG_SOUND_EXTRACT_FMT = "ffmpeg -i %s -ss %s -to %s -f mp3 %s";
 
     //fmpeg cmd to generate a thumbnail
-    public static final String FFMPEG_THUMBNAIL_EXTRACT_FMT = "ffmpeg -i %s -ss %s -vframes 1 -s 480x300 -f image2 %s";
+    public static final String FFMPEG_THUMBNAIL_EXTRACT_FMT = "ffmpeg -ss %s -i %s  -vframes:v 1 -s 480x300 -f image2 %s";
 
     //assets folder path
     public static final String ASSETS_FOLDER = "assets/";
