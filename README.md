@@ -10,12 +10,13 @@ Tool to generate vocabulary flashcards from a subtitle file
 * Get the translation for a target language. Powered by Yandex.
 * Given a video file and subtitle files, extract the sequences where a given subtitle line is said.
 * Export to an html page
+* Export the words into an Anki set
 
-# Wanted features
-
-* Export the words into an Anki set (todo)
-* Export the words to Quizlet (todo)
-* Given a media file, download the subtitle file for a target language (todo)
+# To do
+* Parse commandline arguments because not everyone wants to edit the Main.java
+* Export the words to Quizlet
+* Given a media file, download the subtitle file for a target language
+* Provide a GUI
 
 # Instructions
 * If you need the translation feature, a Yandex API key is required. You can get one in 2 seconds at https://tech.yandex.com/key/form.xml?service=trnsl
@@ -25,3 +26,4 @@ Tool to generate vocabulary flashcards from a subtitle file
 #Fri Jan 17 22:37:45 MYT 2017
 yandex=your-api-key
 ```
+* sqlite dependancy : add the jar sqlite-jdbc-3.8.11.2.jar to your project or to your classpath 
