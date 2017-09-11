@@ -230,9 +230,23 @@ public class Main {
 
                 List<Word> translatedWords = Word.translateCollectionParallel(simplifiedWords, Constants.DEFAULT_LANG);
                 System.out.println("[*] Translation done");
-                for(Word w : translatedWords) {
+                List<Word> res = new ArrayList<>(translatedWords.size());
+                translatedWords
+                        .stream()
+                        .sorted(Comparator
+                                .comparingInt(Word::getOccurrence)
+                                .reversed())
+                        .forEach(res::add);
+
+                for(Word w : res) {
                     System.out.println(w.getBaseForm() + " : " + w.getTranslation());
                 }
+
+                System.out.println("-----------------------------------\n\n\n");
+                for(Word w : res) {
+                    System.out.println(w.getBaseForm() + " : " + w.getTranslation() + "#"+w.getOccurrence());
+                }
+                System.out.println("\n\nCollection of " + res.size() + " words, before : " + words.size());
             }
         }
     }
