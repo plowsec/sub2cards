@@ -12,7 +12,7 @@ public class Main {
     private static final ArrayList<String> supportedExportModes = new ArrayList<>(
             Arrays.asList("words", "lines", "mixed"));
     private static final ArrayList<String> supportedExportFormats = new ArrayList<>(
-            Arrays.asList("html", "anki", "quizlet"));
+            Arrays.asList("html", "anki", "quizlet", "text"));
     private String languages = "en-ru";
     private String exportMode = "lines";
     private String exportFormat = "html";
@@ -124,6 +124,7 @@ public class Main {
                     String a = args.get(arg).get(0);
                     if (a.length() != 5 || a.charAt(2) != '-')
                         throw new RuntimeException("Invalid language : " + a);
+                    main.languages = args.get(arg).get(0);
                     break;
             }
         }
@@ -138,22 +139,22 @@ public class Main {
      * simply prints a usage help for the tool
      */
     private static void printHelp() {
-        System.out.println("Usage: sub2cards -e [html|anki|quizlet] -s path -l [languages]");
+        System.out.println("Usage: sub2cards -e [html|anki|quizlet|text] -s path -l [languages]");
         System.out.println("-h\t print this [h]elp");
-        System.out.println("-e\t [html|anki|quizlet] [e]xport to selected format");
+        System.out.println("-e\t [html|anki|quizlet|text] [e]xport to selected format");
         System.out.println("-m\t path(s) to video [m]edia files, used to extract " +
                 "sound and thumbnails for a subtitle line");
         System.out.println("-s\t path(s) to subtitle file(s) of '[s]ource language'");
         System.out.println("-t\t path(s) to subtitle file(s) of '[t]arget language'");
         System.out.println("-w\t export mode (only makes sense to use with -e) : words|lines|mixed. See Note 3");
-        System.out.println("-l\t source [l]anguage-target [l]anguage, for example 'en-ru'\n");
+        System.out.println("-l\t source [l]anguage/target [l]anguage, for example 'ru-en'\n");
         System.out.println("Note 1: if -t is not specified, the tool will use Yandex Translate to translate" +
                 "the subtitle files to the target language\n" +
                 "Note 2 : if -m is specified, thumbnails and audio extracts will be taken\n\t\tfrom the media files" +
                 "to illustrate the related subtitle line / word.\n" +
-                "Note 3 : for option -w, if 'words' is used, the subtitle files will be parsed,\n\t\t words collected " +
+                "Note 3 : for option -w, if 'words' is used, the subtitle files will be parsed,\n\t\twords collected " +
                 "and sorted by occurrences, and the flashcards will consist of theses words and their " +
-                "Yandex translation\n\t\t If 'lines'" +
+                "Yandex translation\n\t\tIf 'lines'" +
                 "is used, then the flashcards will hold the lines as they appear in the subtitles.\n\t\tIf 'mixed'" +
                 "is used, then the flashcards will hold the lines, and below the words of the lines and their meaning");
     }
@@ -201,24 +202,38 @@ public class Main {
                 System.exit(-1);
             }
         }
+
+        //todo : handle multiple files
         SubParse subParse = new SubParse(main.sourceSubtitles.get(0));
         subParse.parse();
-        List<Word> words = subParse.getSortedWords();
-        List<Line> lines = subParse.getLines();
 
-        /*List<Word> simplifiedWords = Word.simplifyParallel(words, Constants.FACTOR);
-        System.out.println("[*] Simplification done");
 
-        //benchmarkSimplification(words);
+        if(!main.exportMode.equals("words") && !main.targetSubtitles.isEmpty()) {
+            List<Line> lines = subParse.getLines();
+            SubParse targetSubParse = new SubParse(main.targetSubtitles.get(0));
+            targetSubParse.parse();
+            List<Line> targetLines = targetSubParse.getLines();
 
-        List<Word> translatedWords = Word.translateCollectionParallel(simplifiedWords, Constants.DEFAULT_LANG);
-        System.out.println("[*] Translation done");
-        for(Word w : translatedWords) {
-            System.out.println(w);
-        }*/
-
-        List<Line> withTranslation = Line.translateLinesParallel(lines, Constants.DEFAULT_LANG);
+            List<Line> withTranslation = Line.translateLinesParallel(lines, Constants.DEFAULT_LANG);
         /*FlashCard.exportHTML(withTranslation, "tests/video.avi", "tests");*/
-        FlashCard.exportAnki(withTranslation, "got-simple2", main.mediaFiles.get(0), "tests/new-deck");
+            FlashCard.exportAnki(withTranslation, "got-simple2", main.mediaFiles.get(0), "tests/new-deck");
+        }
+        else if(main.exportMode.equals("words"))    {
+            List<Word> words = subParse.getSortedWords();
+
+            //todo : only works for russian language
+            if(main.languages.split("-")[0].equals("ru"))   {
+                //this is really slow with many words
+                List<Word> simplifiedWords = Word.simplifyParallel(words, Constants.FACTOR);
+                System.out.println("[*] Simplification done");
+                //benchmarkSimplification(words);
+
+                List<Word> translatedWords = Word.translateCollectionParallel(simplifiedWords, Constants.DEFAULT_LANG);
+                System.out.println("[*] Translation done");
+                for(Word w : translatedWords) {
+                    System.out.println(w.getBaseForm() + " : " + w.getTranslation());
+                }
+            }
+        }
     }
 }
