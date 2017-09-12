@@ -32,6 +32,7 @@ java -jar sub2cards.jar -s test/got.srt -e anki -m tests/video.avi -w lines
 
 # To do (small contributions)
 
+* Cache the results of the requests made to Yandex/Starling to speed up everything
 * Allow to specify output destination
 * Allow to name the anki deck generated
 * Take into account option -t (target subtitle file), so the user doesn't need to use Yandex
